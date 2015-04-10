@@ -1,6 +1,7 @@
 create table item (
        itemid serial,
-       itemname VARCHAR(255) NOT NULL,
-       quantity INT NOT NULL,
-       PRIMARY KEY (itemid)
+       itemname varchar(255),
+       price int, -- for precision
+       quantity int,
+       PRIMARY KEY(itemid)
 );

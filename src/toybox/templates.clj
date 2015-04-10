@@ -36,12 +36,14 @@
    [:input {:type "submit"
             :value "Login"}]])
 
-(defn item-div [item]
+(defn item-div [item & admin]
   [:div {:name :item}
+   [:p {:name :id}       (:itemid item)]
    [:p {:name :name}     (:name item)]
    [:p {:name :price}    (:price item)]
    [:p {:name :quantity} (:quantity item)]
-   [:p {:name :status}   (:status item)]])
+   [:p {:name :status}   (:status item)]
+   (when admin "meh, not done yet")])
 
 (defn listing-div [listing]
   [:div {:id :listing}
@@ -112,7 +114,6 @@
             :required true}]
    [:input {:type :submit :value "Register"}]])
 
-
 (defn registration-page []
   (html5
    {:lang "en"}
@@ -120,3 +121,44 @@
    [:body
     [:p "register here."]
     (registration-form)]))
+
+
+(defn admin-page []
+  (html5
+   {:lang "en"}
+   [:head [:title "Register"]]
+   [:body
+    [:p "wowzor you are admin"]]))
+
+(defn add-item-form []
+  [:form {:action "/admin/add-item"
+          :method :post}
+   (anti-forgery-field)
+   [:input {:type "text"
+            :name "name"
+            :inputmode "verbatim"
+            :placeholder "item name"
+            :required true}]
+   [:input {:type "text"
+            :name "price"
+            :placeholder "price"
+            :inputmode "verbatim"
+            :required true}]
+   [:input {:type "text"
+            :name "quantity"
+            :placeholder "quantity"
+            :inputmode "verbatim"
+            :required true}]
+   [:input {:type "submit"
+            :value "Login"}]])
+
+(defn admin-inventory-page [items]
+  (html5
+   {:lang "en"}
+   [:head [:title "Register"]]
+   [:body
+    [:p "wowzor admin."]
+    [:p "want you add item?"]
+    (add-item-form)
+    (for [item items]
+      (item-div item :admin))]))

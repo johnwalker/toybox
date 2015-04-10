@@ -17,7 +17,7 @@
       (response "invalid user/pass"))))
 
 (defn logout [r]
-  (-> (response "clearing login session.")
+  (-> (response "login session cleared.")
       (assoc :session nil)
       (content-type "text/html")))
 
@@ -33,3 +33,6 @@
       (catch Exception e
         (-> (response (str "failed to create user " (:username p)))
             (content-type "text/html"))))))
+
+(defn add-item [r]
+  (q/add-item q/db-spec "spandex"))

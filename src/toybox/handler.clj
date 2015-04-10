@@ -15,11 +15,16 @@
   (GET "/admin"     [] g/admin)
   (GET "/inventory" [] (-> g/inventory
                            m/authenticated?))
+  ;; check authorized
+  (GET "/admin/inventory" [] g/admin-inventory)
+  (GET "/cart"      [] g/home)
   (GET "/orders"    [] (-> g/orders
-                           m/authenticated?))
+                           m/require-authenticated))
   (GET "/register"  [] g/register)
 
   (POST "/admin"    [] p/admin)
+  (POST "/admin/add-item" [] (-> p/add-item
+                                 m/require-authenticated))
   (POST "/login"    [] p/login)
   (POST "/logout"   [] p/logout)
   (POST "/register" [] p/register)

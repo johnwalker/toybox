@@ -9,13 +9,12 @@
       (t/signed-login-page)
       (t/unsigned-login-page))))
 
-;; need to check that user is /rly/ admin,
-;; not just that they say they r.
 (defn admin [r]
   (let [s (:session r)
         u (:username s)
         a (:admin u)]
-    (if (and a u)
+    ;; TODO make it so not everyone is admin
+    (if (and true u)
       (t/signed-login-page)
       (t/unsigned-admin-page))))
 
@@ -23,7 +22,11 @@
   (t/home-page))
 
 (defn inventory [r]
-  "smoke weed")
+  (-> (response "smoke weed")
+      (content-type "text/html")))
+
+(defn admin-inventory [r]
+  (-> (response (t/admin-inventory-page []))))
 
 (defn orders [r]
   (pr-str r))
