@@ -18,9 +18,11 @@
 (defquery add-user!    "sql/adduser.sql")
 (defquery list-users   "sql/listusers.sql")
 (defquery create-item! "sql/createitem.sql")
+(defquery find-user-pass "sql/finduserpass.sql")
 
 ;; (get-username db-spec "hi")
 ;; (create-user! db-spec)
 ;; (add-user! db-spec "stephen" "steveellis")
 ;; (list-users db-spec)
 ;; (create-item! db-spec)
+;; (find-user-pass db-spec "stephen" "steveellis")

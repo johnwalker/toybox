@@ -93,7 +93,8 @@
    [:body
     [:p "welcome to the toy store."]
     [:p "no soliciting."]
-    [:a {:href "/register"} "register here."]]))
+    [:p [:a {:href "/register"} "register here."]]
+    [:p [:a {:href "/login"} "login here."]]]))
 
 (defn registration-form []
   [:form {:action "/register"

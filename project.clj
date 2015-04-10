@@ -9,7 +9,8 @@
                  [hiccup "1.0.5"]
                  [yesql "0.4.0"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]
-                 [ring/ring-defaults "0.1.4"]]
+                 [ring/ring-defaults "0.1.4"]
+                 [http-kit "2.1.19"]]
   :plugins [[lein-ring "0.9.3"]]
   :ring {:handler toybox.handler/app}
   :profiles

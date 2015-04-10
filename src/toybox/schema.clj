@@ -2,6 +2,6 @@
 
 (defmulti valid identity)
 
-(defmethod valid :username [])
+(defmethod valid :username [s])
 
-(defmethod valid :password [])
+(defmethod valid :password [s])

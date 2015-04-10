@@ -23,10 +23,11 @@
   (t/home-page))
 
 (defn inventory [r]
-  (pr-str r))
+  "smoke weed")
 
 (defn orders [r]
   (pr-str r))
 
 (defn register [r]
-  (t/registration-page))
+  (-> (response (t/registration-page))
+      (content-type "text/html")))
