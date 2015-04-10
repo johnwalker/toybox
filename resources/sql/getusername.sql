@@ -1,3 +1,3 @@
 SELECT username, password
-FROM user
+FROM useraccount
 where username = :username

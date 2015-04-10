@@ -5,7 +5,7 @@
   :dependencies [[org.clojure/clojure "1.7.0-alpha6"]
                  [instaparse "1.3.6"]
                  [compojure "1.3.3"]
-                 [buddy "0.5.0"]
+                 [buddy "0.5.1"]
                  [hiccup "1.0.5"]
                  [yesql "0.4.0"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]
