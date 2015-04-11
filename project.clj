@@ -2,7 +2,7 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.7.0-alpha6"]
+  :dependencies [[org.clojure/clojure "1.7.0-beta1"]
                  [instaparse "1.3.6"]
                  [compojure "1.3.3"]
                  [buddy "0.5.1"]
@@ -14,5 +14,7 @@
   :plugins [[lein-ring "0.9.3"]]
   :ring {:handler toybox.handler/app}
   :profiles
-  {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring/ring-mock "0.2.0"]]}})
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
+                        [javax.servlet/servlet-api "2.5"]
+                        [ring/ring-mock "0.2.0"]]
+         :source-paths ["dev"]}})

@@ -35,4 +35,14 @@
             (content-type "text/html"))))))
 
 (defn add-item [r]
-  (q/add-item q/db-spec "spandex"))
+  (let [{:keys [name price quantity]} (:params r)]
+    (try
+      (q/add-item! q/db-spec
+                   name
+                   price
+                   quantity)
+      (-> (response "Added item")
+          (content-type "text/html"))
+      (catch Exception e
+        (-> (response "Failed to add item...")
+            (content-type "text/html"))))))
