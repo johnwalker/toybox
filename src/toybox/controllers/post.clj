@@ -37,7 +37,7 @@
 (defn add-item [r]
   (let [{:keys [name price quantity]} (:params r)]
     (try
-      (q/add-item! q/db-spec
+      (q/insert-item! q/db-spec
                    name
                    price
                    quantity)

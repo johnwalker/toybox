@@ -34,11 +34,15 @@ create table item (
        PRIMARY KEY(itemid)
 );
 
-
 -- name: insert-user!
 -- Inserts a user with the given username and password
 INSERT INTO useraccount (username, password)
-VALUES (:username, :password)
+VALUES (:username, :password);
+
+-- name: insert-item!
+-- Inserts an item with the given name, price and quantity
+INSERT INTO item (itemname, price, quantity)
+Values (:itemname, :price, :quantity);
 
 -- name: find-user+pass
 -- Queries for a user with the given password and username
