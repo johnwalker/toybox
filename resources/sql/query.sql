@@ -8,7 +8,7 @@ create table useraccount (
 );
 
 -- name: create-urd!
--- Creates the 'urd' user role definition table
+-- Creates the 'urd' user role definition table.
 create table urd (
        urdid serial,
        name varchar(80),
@@ -34,18 +34,21 @@ create table item (
        PRIMARY KEY(itemid)
 );
 
+-- name: create-order!
+-- Creates the order table.
+
 -- name: insert-user!
--- Inserts a user with the given username and password
+-- Inserts a user with the given username and password.
 INSERT INTO useraccount (username, password)
 VALUES (:username, :password);
 
 -- name: insert-item!
--- Inserts an item with the given name, price and quantity
+-- Inserts an item with the given name, price and quantity.
 INSERT INTO item (itemname, price, quantity)
 Values (:itemname, :price, :quantity);
 
 -- name: find-user+pass
--- Queries for a user with the given password and username
+-- Queries for a user with the given password and username.
 select * from useraccount
 where
 (username = :username)
@@ -53,15 +56,20 @@ and
 (password = :password);
 
 -- name: find-user
--- Queries for a user with the given username
+-- Selects for a user with the given username.
 SELECT userid, username, password
 FROM useraccount
 where username = :username
 
 -- name: select-user
--- Queries for all users
+-- Select all users.
 SELECT userid, username, password
 FROM useraccount
 
 -- name: select-item
+-- Select all items.
 SELECT * from item;
+
+-- name: select-order
+-- Select all orders.
+SELECT * from order;
