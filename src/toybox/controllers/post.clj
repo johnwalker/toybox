@@ -8,7 +8,7 @@
 
 (defn login [r]
   (let [p (:params r)
-        s (q/find-user-pass q/db-spec (:username p) (:password p))]
+        s (q/find-user+pass q/db-spec (:username p) (:password p))]
     (if (seq s)
       (-> (response "user/pass found")
           (assoc-in [:session :username] (:username p))
@@ -24,7 +24,7 @@
 (defn register [r]
   (let [p (:params r)]
     (try
-      (q/add-user! q/db-spec
+      (q/insert-user! q/db-spec
                    (:username p)
                    (:password p))
       ;; TODO: redirect to acc
