@@ -7,7 +7,8 @@
    [clojure.repl :refer [apropos dir doc find-doc pst source]]
    [clojure.test :as test]
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-   [toybox.handler :refer [app]]))
+   [toybox.handler :refer [app]]
+   [toybox.query :as q]))
 
 (defonce server (atom nil))
 

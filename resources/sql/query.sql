@@ -7,6 +7,10 @@ create table useraccount (
        PRIMARY KEY (useraccountid)
 );
 
+-- name: drop-useraccount!
+-- Deletes the useraccount table.
+drop table useraccount;
+
 -- name: create-urd!
 -- Creates the 'urd' user role definition table.
 create table urd (
@@ -15,14 +19,22 @@ create table urd (
        primary key (urdid)
 );
 
+-- name: drop-urd!
+-- Drops the 'urd' user role definition table.
+drop table urd;
+
 -- name: create-userrole!
 -- Creates the userrole table. 
 create table userrole (
        userroleid serial,
-       useraccountid int references user(useraccountid),
+       useraccountid int references useraccount(useraccountid),
        urdid int references urd(urdid),
-       primary key (serial)
+       primary key (userroleid)
 );
+
+-- name: drop-userrole!
+-- Drops the userrole table. 
+drop table userrole;
 
 -- name: create-item!
 -- Creates the item table for containing item name, price
@@ -35,12 +47,16 @@ create table item (
        PRIMARY KEY(itemid)
 );
 
+-- name: drop-item!
+-- Drops the item table. 
+drop table item;
+
 -- name: create-orderitem!
 -- Creates the orderitem table for containing the items
 -- in an order.
 create table orderitem (
        orderitemid serial,
-       orderid int references order(orderid),
+       orderid int references ordertable(orderid),
        itemid int references item(itemid),
        quantity int,
        price int,
@@ -48,22 +64,35 @@ create table orderitem (
        PRIMARY KEY(orderitemid)
 );
 
+-- name: drop-orderitem!
+-- Deletes the orderitem table.
+drop table orderitem;
+
+-- name: create-status!
+-- Creates the table of statuses for item states. 
 create table status (
        statusid serial,
        name varchar(255)
 );
 
+-- name: drop-status!
+-- Drops the status table
+drop table status;
+
 -- name: create-order!
 -- Creates the order table for recording the dates orders
 -- have been placed and their status.
-
-create table order (
+create table ordertable (
        orderid serial,
        useraccountid int references useraccount(useraccountid),
-       statusid int references status(statusid)
+       statusid int,
        placementtime timestamp,
        PRIMARY KEY(orderid)
 );
+
+-- name: drop-order!
+-- Deletes the order table.
+drop table ordertable;
 
 -- name: insert-user!
 -- Inserts a user with the given username and password.
@@ -100,4 +129,5 @@ SELECT * from item;
 
 -- name: select-order
 -- Select all orders.
-SELECT * from order;
+SELECT * from ordertable;
+
