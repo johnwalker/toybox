@@ -1,26 +1,33 @@
 (ns toybox.query
   (:require [yesql.core :refer [defqueries]])
-  (:import org.postgresql.ds.PGPoolingDataSource))
+  (:import com.mchange.v2.c3p0.ComboPooledDataSource))
 
 (defonce config (read-string (slurp "config.edn")))
 
-(defonce db-spec
-  {:datasource
-   (doto (new PGPoolingDataSource)
-     (.setServerName     "localhost")
-     (.setDatabaseName   (if (:testing config)
-                           "toyboxtest"
-                           "toybox"))
-     (.setUser           (:username config))
-     (.setPassword       (:password config))
-     (.setMaxConnections 10))})
+(defn make-pool
+  [spec]
+  (let [cpds (doto (ComboPooledDataSource.)
+               (.setDriverClass (:classname spec)) 
+               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
+               (.setUser (:user spec))
+               (.setPassword (:password spec))
+               (.setMaxIdleTimeExcessConnections (* 30 30))
+               (.setMaxIdleTime (* 3 60 60)))] 
+    {:datasource cpds}))
+
+
+(let [db-host "localhost"
+      db-port 3306
+      db-name "toyboxtest"]
+  (defonce db-spec (make-pool {:classname "com.mysql.jdbc.Driver"
+                               :subprotocol "mysql"
+                               :subname (str "//" db-host ":" db-port "/" db-name)
+                               :user (:username config)
+                               :password (:password config)})))
 
 (defqueries "sql/query.sql")
 
 (def creates [create-useraccount!
-              create-urd!
-              create-status!
-              create-userrole!
               create-item!
               create-order!
               create-orderitem!])
@@ -28,9 +35,6 @@
 (def drops [drop-orderitem!
             drop-order!
             drop-item!
-            drop-status!
-            drop-userrole!
-            drop-urd!
             drop-useraccount!])
 
 (defn create-tables! [s?]
@@ -52,9 +56,13 @@
           (throw e))))))
 
 (defn reset-tables! []
-  (try
-    (with-out-str (create-tables! true))
-    (catch Exception e
-      (drop-tables! false)
-      (let [s (with-out-str (create-tables! false))]
-        (when (seq s) s)))))
+  (let [message (try
+                  (with-out-str (create-tables! true))
+                  (catch Exception e
+                    (drop-tables! false)
+                    (let [s (with-out-str (create-tables! false))]
+                      (when (seq s) s))))]
+    (when-not message
+      (doto db-spec
+        (init-useraccount!)
+        (init-item!)))))

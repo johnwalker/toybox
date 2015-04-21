@@ -4,30 +4,39 @@
             [toybox.middleware :as m]
             [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]))
 
 (defroutes app-routes
-  (GET "/"          [] g/home)
-  (GET "/login"     [] g/login)
-  (GET "/admin"     [] g/admin)
+  (GET "/"          [] (-> g/home
+                           m/authenticated?))
   (GET "/inventory" [] (-> g/inventory
                            m/authenticated?))
+  
   ;; check authorized
-  (GET "/admin/inventory" [] g/admin-inventory)
-  (GET "/cart"      [] g/home)
-  (GET "/orders"    [] (-> g/orders
-                           m/require-authenticated))
-  (GET "/register"  [] g/register)
-
-  (POST "/admin"    [] p/admin)
-  (POST "/admin/add-item" [] (-> p/add-item
-                                 m/require-authenticated))
+  (POST "/add-to-cart" [] (-> p/add-to-cart))
+  (POST "/clear-cart"  [] p/clear-cart)
+  (POST "/submit-cart" [] p/submit-cart)
+  
+  (GET "/cart"      [] g/cart)
+  (GET "/orders"    [] g/orders)
+  
+  (GET "/manager/sales/statistics" [] identity)
+  (GET "/manager/sales/promotion" [] identity)
+  
+  (POST "/staff"    [] identity)
+  (POST "/staff/ship" [] identity)
+  (POST "/staff/update-quantity" [] identity)
+  
+  (GET "/login"     [] g/login)
   (POST "/login"    [] p/login)
+  (GET "/logout"    [] p/logout)
   (POST "/logout"   [] p/logout)
+
+  (GET "/register" []  g/register)
   (POST "/register" [] p/register)
 
   (route/not-found "Not Found"))
 
-(def app
-  (wrap-defaults app-routes site-defaults))
+(def api (wrap-defaults app-routes api-defaults))
 
+(def app (wrap-defaults app-routes site-defaults))

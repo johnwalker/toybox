@@ -6,10 +6,10 @@
    [clojure.pprint :refer [pprint]]
    [clojure.repl :refer [apropos dir doc find-doc pst source]]
    [clojure.test :as test]
-   [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+   [clojure.tools.namespace.repl :refer [refresh-all]]
    [toybox.handler :refer [app]]
    [toybox.query :as q]))
-
+(defonce used (atom nil))
 (defonce server (atom nil))
 
 (defn init
@@ -18,12 +18,15 @@
 
 (defn start
   []
-  (reset! server (run-server #'app {:port 8080})))
+  (reset! server (run-server #'app {:port 8080}))
+  (reset! used true))
 
 (defn stop
   []
-  (@server :timeout 100)
-  (reset! server nil))
+  (when @used
+    (@server :timeout 100)
+    (reset! server nil)
+    (reset! used nil)))
 
 (defn go
   []
@@ -34,7 +37,19 @@
 (defn reset
   []
   (stop)
-  (refresh :after 'user/go))
+  (q/reset-tables!)
+  (refresh-all :after 'user/go))
 
 (defn t []
   (test/run-tests 'toybox.handler-test))
+
+(defn view-db []
+  [(q/select-user q/db-spec)
+   (q/select-item q/db-spec)])
+
+(defn view2 []
+  (q/select-order q/db-spec))
+
+(defn view3 []
+  (q/select-orderitem q/db-spec))
+
