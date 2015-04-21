@@ -69,7 +69,7 @@ create table ordertable (
        orderstatus enum ('pending', 'shipped'),
        placementtime timestamp default current_timestamp,
        primary key(orderid),
-       foreign key (useraccountid) references useraccount(useraccountid),
+       foreign key (useraccountid) references useraccount(useraccountid)
 );
 
 -- name: drop-order!
@@ -168,6 +168,12 @@ and ordertable.orderstatus = 'pending';
 -- Updates an items quantity.
 update item 
 set item.quantity = :quantity
+where item.itemid = :itemid
+
+-- name: update-item-promorate!
+-- Updates an items promorate.
+update item 
+set item.promorate = :promorate
 where item.itemid = :itemid
 
 -- name: select-orderitem-order

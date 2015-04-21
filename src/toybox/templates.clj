@@ -60,8 +60,9 @@
 
 (defn item-div [item & staff]
   [:div {:name :item}
-   [:form {:action (if staff
-                     "/staff/update-quantity"
+   [:form {:action (case (first staff)
+                     :staff "/staff/update-quantity"
+                     :manager "/manager/update-promorate"
                      "/add-to-cart")
            :method :post}
     (anti-forgery-field)
@@ -81,12 +82,18 @@
     [:p {:name :name}     (str "Item name: " (:itemname item))]
     [:p {:name :price}    (str "Price: " (:price item))]
     [:p {:name :quantity} (str "Quantity: " (:quantity item))]
-    (if staff
-      [:div {:name "staff-submit"}
-       [:input {:type "text"
-                :name "new-quantity"}]
-       [:input {:type "submit"
-                :value "Update quantity"}]]
+    [:p {:name :promorate} (str "Promorate: " (:promorate item))]
+    (case (first staff)
+      :staff [:div {:name "staff-submit"}
+              [:input {:type "text"
+                       :name "new-quantity"}]
+              [:input {:type "submit"
+                       :value "Update quantity"}]]
+      :manager [:div {:name "manager-submit"}
+                [:input {:type "text"
+                         :name "new-promorate"}]
+                [:input {:type "submit"
+                         :value "Update promorate"}]]
       [:input {:type "submit"
                :value "Add to cart"}])]])
 
@@ -151,7 +158,7 @@
 (defn manager-elements [role]
   (when (#{"manager"} role)
     [:div {:id "managerelements"}
-     [:p [:a {:href "/manager/promotion"} "Promotions"]]]))
+     [:p [:a {:href "/manager/promorate"} "Promorates"]]]))
 
 (defn none-elements [role]
   (when ((complement #{"user" "manager" "staff"}) role)
@@ -359,3 +366,11 @@
    [:body
     (nav-bar role)
     (order-div orders)]))
+
+(defn manager-promorate-page [role items]
+  (html5
+   {:lang "en"}
+   [:head [:title "Pending Orders"]]
+   [:body
+    (nav-bar role)
+    (map #(item-div % :manager) items)]))

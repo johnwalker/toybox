@@ -70,3 +70,12 @@
             (content-type "text/html")))
       (-> (response "unauthorized")
           (status 400)))))
+
+(defn manager-promorates [r]
+  (let [role (get-in r [:db :userrole])]
+    (if (#{"manager"} role)
+      (let [items (q/select-item q/db-spec)]
+        (-> (response (t/manager-promorate-page role items))
+            (content-type "text/html")))
+      (-> (response "unauthorized")
+          (status 400)))))

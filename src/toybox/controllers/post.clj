@@ -85,12 +85,10 @@
       (try
         (let [qr (q/insert-order<! q/db-spec (:useraccountid (first s)))]
           (doseq [item cart]
-            ;; FIXME: security vulnerability, i don't care right now.
             (q/insert-orderitem! q/db-spec
                                  (:generated_key qr)
                                  (:itemid item)
-                                 (:quantity item)
-                                 (:price item))))
+                                 (:quantity item))))
         (-> (clear-cart r)
             (assoc-in [:headers "Location"] "/orders")))
       (redirect "/login"))))
@@ -122,6 +120,22 @@
           (redirect "/inventory"))
         (catch Exception e
           (-> (response (str "Insufficient quantity of item in inventory. Order not shipped."))
+              (content-type "text/html"))))
+      (-> (response "unauthorized")
+          (status 400)))))
+
+(defn update-promorate [r]
+  (let [role (get-in r [:db :userrole])
+        {:keys [itemid new-promorate]} (:params r)]
+    (if (#{"manager"} role)
+      (try
+        (println new-promorate)
+        (let [itemid (Integer/parseInt itemid)
+              new-promorate (Float/parseFloat new-promorate)]
+          (q/update-item-promorate! q/db-spec new-promorate itemid)
+          (redirect "/manager/promorate"))
+        (catch Exception e
+          (-> (response (str "Invalid promorate. Must be between 1 and 0"))
               (content-type "text/html"))))
       (-> (response "unauthorized")
           (status 400)))))
