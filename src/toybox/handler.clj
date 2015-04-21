@@ -13,26 +13,32 @@
                            m/authenticated?))
   
   ;; check authorized
-  (POST "/add-to-cart" [] (-> p/add-to-cart))
+  (POST "/add-to-cart" [] (-> p/add-to-cart
+                              m/authenticated?))
   (POST "/clear-cart"  [] p/clear-cart)
-  (POST "/submit-cart" [] p/submit-cart)
+  (POST "/submit-cart" [] (-> p/submit-cart
+                              m/authenticated?))
   
-  (GET "/cart"      [] g/cart)
-  (GET "/orders"    [] g/orders)
-  
-  (GET "/manager/sales/statistics" [] identity)
-  (GET "/manager/sales/promotion" [] identity)
-  
-  (POST "/staff"    [] identity)
-  (POST "/staff/ship" [] identity)
-  (POST "/staff/update-quantity" [] identity)
+  (GET "/cart"      [] (-> g/cart
+                           m/authenticated?))
+  (GET "/orders"    [] (-> g/orders
+                           m/authenticated?))
+  (GET "/staff/pending-orders"    [] (-> g/pending-orders
+                                         m/authenticated?))
+
+  (GET "/staff/inventory" [] (-> g/staff-inventory
+                                 m/authenticated?))
+  (POST "/staff/update-quantity" [] (-> p/update-quantity
+                                        m/authenticated?))
+  (POST "/staff/ship" [] (-> p/ship-order
+                             m/authenticated?))
   
   (GET "/login"     [] g/login)
   (POST "/login"    [] p/login)
   (GET "/logout"    [] p/logout)
   (POST "/logout"   [] p/logout)
 
-  (GET "/register" []  g/register)
+  (GET  "/register" []  g/register)
   (POST "/register" [] p/register)
 
   (route/not-found "Not Found"))

@@ -141,7 +141,7 @@ select * from ordertable;
 -- name: select-order-with-status
 -- Get orders and their statuses
 select * from ordertable
-where status = :status
+where orderstatus = :status
 
 -- name: select-customer-orders
 -- Get orders
@@ -163,4 +163,15 @@ set item.quantity = item.quantity - orderitem.quantity,
     ordertable.orderstatus = 'shipped'
 where orderitem.orderid = :orderid
 and ordertable.orderstatus = 'pending';
+
+-- name: update-item-quantity!
+-- Updates an items quantity.
+update item 
+set item.quantity = :quantity
+where item.itemid = :itemid
+
+-- name: select-orderitem-order
+-- Gets items in a particular item
+select * from orderitem, item
+where orderitem.orderid = :orderid
 

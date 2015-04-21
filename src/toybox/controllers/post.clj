@@ -50,10 +50,17 @@
             (content-type "text/html"))))))
 
 (defn add-to-cart [r]
-  (-> (redirect "/inventory")
-      (assoc :session (:session r))
-      (update-in [:session :cart] conj (select-keys (:params r) [:itemname :price :itemid]))
-      (content-type "text/html")))
+  (if (:db r)
+    (let [q (select-keys (:params r) [:itemname :price :itemid :quantity])]
+      (-> (redirect "/inventory")
+          (assoc :session (:session r))
+          (update-in [:session :cart (:itemid q)]
+                     (fn [o q]
+                       (if o
+                         (update-in o [:quantity] (fn [l r] (+ l r)) (Integer/parseInt  (:quantity q)))
+                         q)) q)
+          (content-type "text/html")))
+    (redirect "/login")))
 
 (defn clear-cart [r]
   (-> (redirect "/inventory")
@@ -62,7 +69,7 @@
       (content-type "text/html")))
 
 (defn submit-cart [r]
-  (let [cart (get-in r [:session :cart])
+  (let [cart (vals (get-in r [:session :cart]))
         p    (:session r)
         s    (q/find-user+pass q/db-spec (:username p) (:password p))]
     (if (seq s)
@@ -78,3 +85,22 @@
         (-> (clear-cart r)
             (assoc-in [:headers "Location"] "/orders")))
       (redirect "/login"))))
+
+
+(defn update-quantity [r]
+  (let [role (get-in r [:db :userrole])
+        {:keys [new-quantity itemid]} (:params r)]
+    (if (#{"staff" "manager"} role)
+      (try
+        (let [new-quantity (Integer/parseInt new-quantity)
+              itemid (Integer/parseInt itemid)]
+          (q/update-item-quantity! q/db-spec new-quantity itemid)
+          (redirect "/staff/inventory"))
+        (catch Exception e
+          (-> (response (str "Failed to update quantity for itemid " itemid))
+              (content-type "text/html"))))
+
+      (-> (response "unauthorized")
+          (status 400)))))
+
+(defn ship-order [r])

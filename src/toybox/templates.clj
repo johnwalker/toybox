@@ -60,7 +60,9 @@
 
 (defn item-div [item & staff]
   [:div {:name :item}
-   [:form {:action "/add-to-cart"
+   [:form {:action (if staff
+                     "/staff/update-quantity"
+                     "/add-to-cart")
            :method :post}
     (anti-forgery-field)
     [:input {:type "hidden"
@@ -70,6 +72,9 @@
              :name "price"
              :value (:price item)}]
     [:input {:type "hidden"
+             :name "quantity"
+             :value 1}]
+    [:input {:type "hidden"
              :name "itemid"
              :value (:itemid item)}]
     [:p {:name :id}       (str "Item ID: " (:itemid item))]
@@ -77,7 +82,11 @@
     [:p {:name :price}    (str "Price: " (:price item))]
     [:p {:name :quantity} (str "Quantity: " (:quantity item))]
     (if staff
-      "meh, not done yet"
+      [:div {:name "staff-submit"}
+       [:input {:type "text"
+                :name "new-quantity"}]
+       [:input {:type "submit"
+                :value "Update quantity"}]]
       [:input {:type "submit"
                :value "Add to cart"}])]])
 
@@ -121,47 +130,56 @@
 
 (def signed-admin-page signed-login-page)
 
-(defn user-elements [logged-in]
-  (when (#{"user" "staff" "manager"} (:userrole logged-in))
+(defn user-elements [role]
+  (when (#{"user" "staff" "manager"} role)
     [:div {:id "userelements"}
      [:p [:a {:href "/orders"} "Orders"]]
      [:p [:a {:href "/cart"} "Cart"]]]))
 
-(defn staff-elements [logged-in]
-  (when (#{"staff" "manager"} (:userrole logged-in))
+(defn logout-elements [role]
+  (when (#{"user" "staff" "manager"} role)
+    [:div {:id "logout-elements"}
+     [:p [:a {:href "/logout"} "Logout"]]]))
+
+(defn staff-elements [role]
+  (when (#{"staff" "manager"} role)
     [:div {:id "staffelements"}
-     [:p [:a {:href "/staff-inventory"} "Staff inventory"]]]))
+     [:p [:a {:href "/staff/inventory"} "Staff inventory"]]
+     [:p [:a {:href "/staff/pending-orders"} "Pending Orders"]]]))
 
-(defn manager-elements [logged-in]
-  (when (#{"manager"} (:userrole logged-in))
+(defn manager-elements [role]
+  (when (#{"manager"} role)
     [:div {:id "managerelements"}
-     [:p [:a {:href "/pending-orders"} "Pending Orders"]]
-     [:p [:a {:href "/promotion"} "Promotions"]]]))
+     [:p [:a {:href "/manager/promotion"} "Promotions"]]]))
 
-(defn none-elements [logged-in]
-  (when ((complement #{"user" "manager" "staff"}) (:userrole logged-in))
-    [:div {:id "login"}
-     [:p "Login"]
-     (login-form)]))
+(defn none-elements [role]
+  (when ((complement #{"user" "manager" "staff"}) role)
+    [:div {:id :none}
+     [:div {:id "Register"}
+      [:a {:href "/register"} "Register"]]
+     [:div {:id "login"}
+      [:p "Login"]
+      (login-form)]]))
 
-(defn nav-bar [logged-in]
+(defn nav-bar [role]
   [:nav [:p [:a {:href "/inventory"} "Inventory"]]
-   (user-elements logged-in)
-   (staff-elements logged-in)
-   (manager-elements logged-in)
-   (none-elements logged-in)])
+   (user-elements role)
+   (staff-elements role)
+   (manager-elements role)
+   (none-elements role)
+   (logout-elements role)])
 
-(defn home-page [logged-in]
+(defn home-page [role]
   (html5
    {:lang "en"}
    [:head [:title "Home"]]
    [:body
-    (nav-bar logged-in)
-    (when-not logged-in
+    (nav-bar role)
+    (when-not role
       [:div {:id "unsigned"}
-       [:div {:id "login"}
-        [:h1 "Login"]
-        (login-form)]
+       ;; [:div {:id "login"}
+       ;;  [:h1 "Login"]
+       ;;  (login-form)]
        [:div {:id "register"}
         [:h1 "Or register a new account"]
         (registration-form)]])
@@ -230,13 +248,14 @@
             :value (:price item)}]
    [:p {:name :id}       (str "Item ID: " (:itemid item))]
    [:p {:name :name}     (str "Item name: " (:itemname item))]
-   [:p {:name :price}    (str "Price: " (:price item))]])
+   [:p {:name :price}    (str "Price: " (:price item))]
+   [:p {:name :quantity}    (str "Quantity: " (:quantity item))]])
 
 (defn cart-div [items]
   [:div {:id "cart"}
    (if (seq items)
      [:div {:id "nonempty"}
-      (map cart-item items)
+      (map cart-item (vals items))
       [:form {:action "/submit-cart"
               :method :post}
        (anti-forgery-field)
@@ -250,20 +269,20 @@
      [:div {:id "empty"}
       [:p "Your cart is currently empty."]])])
 
-(defn cart-page [r items]
+(defn cart-page [role items]
   (html5
    {:lang "en"}
    [:head [:title "Staff page"]]
    [:body
-    (nav-bar (:session r))
+    (nav-bar role)
     (cart-div items)]))
 
-(defn inventory-page [r cart items]
+(defn inventory-page [role cart items]
   (html5
    {:lang "en"}
    [:head [:title "Register"]]
    [:body
-    (nav-bar (:session r))
+    (nav-bar role)
     (cart-div cart)
     [:div {:id "inventory"}
      (map item-div items)]]))
@@ -274,32 +293,47 @@
 (defn order-div [order]
   (map order-item-div order))
 
-(defn order-page [orders]
-  (html5
-   {:lang "en"}
-   [:head [:title "Orders"]]
-   [:body
-    [:div {:id "orders"}
-     (order-div orders)]]))
 
 
-(defn manager-page []
+(defn staff-inventory-page [role items]
   (html5
    {:lang "en"}
-   [:head [:title "Manager page"]]
+   [:head [:title "Register"]]
    [:body
-    "dunno yet"]))
+    (nav-bar role)
+    [:div {:id "inventory"}
+     (map #(item-div % :staff) items)]]))
 
-(defn staff-page []
-  (html5
-   {:lang "en"}
-   [:head [:title "Staff page"]]
-   [:body
-    "dunno yet"]))
+(defn pending-order [m]
+  [:div {:name :pending}
+   [:form {:action "/staff/ship"
+           :method :post}]
+   (anti-forgery-field)
+   [:input {:type "hidden"
+            :name "orderid"
+            :value (:orderid m)}]
+   
+   ;; [:p {:name :id}       (str "Item ID: " (:itemid item))]
+   ;; [:p {:name :name}     (str "Item name: " (:itemname item))]
+   ;; [:p {:name :price}    (str "Price: " (:price item))]
+   ;; [:p {:name :quantity} (str "Quantity: " (:quantity item))]
+   [:input {:type :submit :value "Ship it"}]])
 
-(defn user-page []
+(defn pending-order-page [role orders]
   (html5
    {:lang "en"}
-   [:head [:title "User page"]]
+   [:head [:title "Pending Orders"]]
    [:body
-    "dunno yet"]))
+    [:div {:id "pendingorders"}
+     (map pending-order orders)]]))
+
+(defn order-page [role orders]
+  (html5
+   {:lang "en"}
+   [:head [:title "Pending Orders"]]
+   [:body
+    (nav-bar role)
+    [:div {:id "pendingorders"}
+     (pr-str orders)]]))
+
+
