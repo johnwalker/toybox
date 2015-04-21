@@ -36,7 +36,7 @@ create table orderitem (
        quantity int check(quantity > 0),
        price int,
        primary key(orderitemid),
-       foreign key (orderitemid) references ordertable(orderid),
+       foreign key (orderid) references ordertable(orderid),
        foreign key (itemid) references item(itemid)
 );
 
