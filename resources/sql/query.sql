@@ -50,6 +50,10 @@ create table promotion (
        check (endtime > starttime)
 );
 
+-- name: drop-promotion!
+-- Drops the promotion table.
+drop table promotion;
+
 -- name: drop-orderitem!
 -- Deletes the orderitem table.
 drop table orderitem;
