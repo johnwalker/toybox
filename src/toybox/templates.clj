@@ -139,7 +139,7 @@
      [:p [:a {:href "/promotion"} "Promotions"]]]))
 
 (defn none-elements [logged-in]
-  (when ((complement #{"user" "manager" "staff"}) logged-in)
+  (when ((complement #{"user" "manager" "staff"}) (:userrole logged-in))
     [:div {:id "login"}
      [:p "Login"]
      (login-form)]))
