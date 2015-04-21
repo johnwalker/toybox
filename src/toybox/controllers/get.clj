@@ -37,6 +37,12 @@
     (-> (response (t/order-page (get-in r [:db :userrole]) orders))
         (content-type "text/html"))))
 
+(defn my-orders [r]
+  (let [orders (partition-by :orderid (q/select-customer-orders q/db-spec (get-in r [:db :useraccountid])))]
+    (-> (response (t/my-order-page (get-in r [:db :userrole]) orders))
+        (assoc :session (:session r))
+        (content-type "text/html"))))
+
 (defn register [r]
   (-> (response (t/registration-page))
       (content-type "text/html")))
@@ -48,11 +54,15 @@
 
 (defn pending-orders [r]
   (let [pending-orders (q/select-order-with-status q/db-spec "pending")
+        role (get-in r [:db :userrole])
         orderitems (doall (for [order pending-orders]
                             (q/select-orderitem-order q/db-spec (:orderid order))))]
-
-    (-> (response "SHIT SHIT SHIT")
-        (content-type "text/html"))))
+    (if (#{"staff" "manager"} role)
+      (-> (response (t/pending-order-page role orderitems))
+          (content-type "text/html"))
+      (-> (response "unauthorized. you must first login.")
+          (status 400)
+          (content-type "text/html")))))
 
 (defn staff-inventory [r]
   (let [role (get-in r [:db :userrole])]

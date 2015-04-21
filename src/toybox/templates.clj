@@ -133,7 +133,7 @@
 (defn user-elements [role]
   (when (#{"user" "staff" "manager"} role)
     [:div {:id "userelements"}
-     [:p [:a {:href "/orders"} "Orders"]]
+     [:p [:a {:href "/my-orders"} "My orders"]]
      [:p [:a {:href "/cart"} "Cart"]]]))
 
 (defn logout-elements [role]
@@ -145,6 +145,7 @@
   (when (#{"staff" "manager"} role)
     [:div {:id "staffelements"}
      [:p [:a {:href "/staff/inventory"} "Staff inventory"]]
+     [:p [:a {:href "/orders"} "All orders"]]
      [:p [:a {:href "/staff/pending-orders"} "Pending Orders"]]]))
 
 (defn manager-elements [role]
@@ -287,13 +288,18 @@
     [:div {:id "inventory"}
      (map item-div items)]]))
 
-(defn order-item-div [item]
-  [:p (pr-str item)])
+(defn order-item-div [order]
+  [:div {:name :orderwrapper}
+   [:p {:name :orderid} (str "Order #"(:orderid (first order)))]
+   (for [item order]
+     [:div {:name :order}
+      [:p {:name :id}       (str "Item ID: " (:itemid item))]
+      [:p {:name :name}     (str "Item name: " (:itemname item))]
+      [:p {:name :price}    (str "Price: " (:price item))]
+      [:p {:name :quantity} (str "Quantity: " (:quantity item))]])])
 
 (defn order-div [order]
   (map order-item-div order))
-
-
 
 (defn staff-inventory-page [role items]
   (html5
@@ -304,26 +310,29 @@
     [:div {:id "inventory"}
      (map #(item-div % :staff) items)]]))
 
-(defn pending-order [m]
+(defn pending-order [order]
   [:div {:name :pending}
    [:form {:action "/staff/ship"
-           :method :post}]
-   (anti-forgery-field)
-   [:input {:type "hidden"
-            :name "orderid"
-            :value (:orderid m)}]
-   
-   ;; [:p {:name :id}       (str "Item ID: " (:itemid item))]
-   ;; [:p {:name :name}     (str "Item name: " (:itemname item))]
-   ;; [:p {:name :price}    (str "Price: " (:price item))]
-   ;; [:p {:name :quantity} (str "Quantity: " (:quantity item))]
-   [:input {:type :submit :value "Ship it"}]])
+           :method :post}
+    (anti-forgery-field)
+    [:input {:type "hidden"
+             :name "orderid"
+             :value (:orderid (first order))}]
+    [:p {:name :orderid} (str "Order #"(:orderid (first order)))]
+    (for [item order]
+      [:div {:name :order}
+       [:p {:name :id}       (str "Item ID: " (:itemid item))]
+       [:p {:name :name}     (str "Item name: " (:itemname item))]
+       [:p {:name :price}    (str "Price: " (:price item))]
+       [:p {:name :quantity} (str "Quantity: " (:quantity item))]])
+    [:input {:type :submit :value "Ship it"}]]])
 
 (defn pending-order-page [role orders]
   (html5
    {:lang "en"}
    [:head [:title "Pending Orders"]]
    [:body
+    (nav-bar role)
     [:div {:id "pendingorders"}
      (map pending-order orders)]]))
 
@@ -336,4 +345,10 @@
     [:div {:id "pendingorders"}
      (pr-str orders)]]))
 
-
+(defn my-order-page [role orders]
+  (html5
+   {:lang "en"}
+   [:head [:title "Pending Orders"]]
+   [:body
+    (nav-bar role)
+    (order-div orders)]))

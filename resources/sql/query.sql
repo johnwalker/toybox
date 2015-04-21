@@ -18,9 +18,24 @@ create table item (
        itemid int auto_increment,
        itemname varchar(255),
        price int, -- for precision
-       quantity int check (quantity >= 0),
+       quantity int,
+       check (quantity >= 0),
+       check (price >= 0),
        primary key(itemid)
 );
+
+-- name: nonnegative-quantity!
+-- Wow, mysql... http://blog.christosoft.de/2012/08/mysql-check-constraint/
+create trigger nonnegative_quantity before update on `item`
+     for each row 
+     begin 
+     declare msg varchar(255);
+     if (new.quantity < 0)
+     then 
+        set msg = concat('violated positive_quantity:', cast(new.quantity as char));
+        signal sqlstate '45000' set message_text = msg;
+     end if; 
+     end
 
 -- name: drop-item!
 -- Drops the item table.
@@ -34,7 +49,7 @@ create table orderitem (
        orderid int,
        itemid int,
        quantity int check(quantity > 0),
-       price int,
+       price int check(price > 0),
        primary key(orderitemid),
        foreign key (orderid) references ordertable(orderid),
        foreign key (itemid) references item(itemid)
@@ -171,7 +186,7 @@ set item.quantity = :quantity
 where item.itemid = :itemid
 
 -- name: select-orderitem-order
--- Gets items in a particular item
+-- Gets items in a particular order
 select * from orderitem, item
 where orderitem.orderid = :orderid
-
+and   orderitem.itemid = item.itemid

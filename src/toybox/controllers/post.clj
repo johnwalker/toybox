@@ -52,14 +52,23 @@
 (defn add-to-cart [r]
   (if (:db r)
     (let [q (select-keys (:params r) [:itemname :price :itemid :quantity])]
-      (-> (redirect "/inventory")
-          (assoc :session (:session r))
-          (update-in [:session :cart (:itemid q)]
-                     (fn [o q]
-                       (if o
-                         (update-in o [:quantity] (fn [l r] (+ l r)) (Integer/parseInt  (:quantity q)))
-                         q)) q)
-          (content-type "text/html")))
+      (try
+        (-> (redirect "/inventory")
+            (assoc :session (:session r))
+            (update-in [:session :cart (:itemid q)]
+                       (fn [o q]
+                         (if o
+                           (update-in o [:quantity] (fn [l r] (+ (if (string? l)
+                                                                   (Integer/parseInt l)
+                                                                   l)
+                                                                 (if (string? r)
+                                                                   (Integer/parseInt r)
+                                                                   r))) (:quantity q))
+                           q)) q)
+            (content-type "text/html"))
+        (catch Exception e
+          (-> (response "WTF")
+              (content-type "text/html")))))
     (redirect "/login")))
 
 (defn clear-cart [r]
@@ -103,4 +112,16 @@
       (-> (response "unauthorized")
           (status 400)))))
 
-(defn ship-order [r])
+(defn ship-order [r]
+  (let [role (get-in r [:db :userrole])
+        orderid (get-in r [:params :orderid])]
+    (if (#{"staff" "manager"} role)
+      (try
+        (let [orderid (Integer/parseInt orderid)]
+          (q/approve-order! q/db-spec orderid)
+          (redirect "/inventory"))
+        (catch Exception e
+          (-> (response (str "Insufficient quantity of item in inventory. Order not shipped."))
+              (content-type "text/html"))))
+      (-> (response "unauthorized")
+          (status 400)))))

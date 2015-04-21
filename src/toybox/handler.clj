@@ -21,6 +21,8 @@
   
   (GET "/cart"      [] (-> g/cart
                            m/authenticated?))
+  (GET "/my-orders" [] (-> g/my-orders
+                           m/authenticated?))
   (GET "/orders"    [] (-> g/orders
                            m/authenticated?))
   (GET "/staff/pending-orders"    [] (-> g/pending-orders
