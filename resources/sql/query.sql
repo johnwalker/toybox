@@ -17,7 +17,8 @@ drop table useraccount;
 create table item (
        itemid int auto_increment,
        itemname varchar(255),
-       price int, -- for precision
+       price float check(price >= 0), 
+       promorate float check(promorate > 0),
        quantity int,
        check (quantity >= 0),
        check (price >= 0),
@@ -49,27 +50,11 @@ create table orderitem (
        orderid int,
        itemid int,
        quantity int check(quantity > 0),
-       price int check(price > 0),
+       price float check(price > 0),
        primary key(orderitemid),
        foreign key (orderid) references ordertable(orderid),
        foreign key (itemid) references item(itemid)
 );
-
--- name: create-promotion!
--- Creates the promotion table.
-create table promotion (
-       promotionid int auto_increment,
-       starttime timestamp default current_timestamp,
-       endtime timestamp,
-       promotionrate int,
-       primary key(promotionid),
-       check (promotionrate >= 0 and promotionrate <= 100),
-       check (endtime > starttime)
-);
-
--- name: drop-promotion!
--- Drops the promotion table.
-drop table promotion;
 
 -- name: drop-orderitem!
 -- Deletes the orderitem table.
@@ -81,12 +66,10 @@ drop table orderitem;
 create table ordertable (
        orderid int auto_increment,
        useraccountid int,
-       promotionid int,
        orderstatus enum ('pending', 'shipped'),
        placementtime timestamp default current_timestamp,
        primary key(orderid),
        foreign key (useraccountid) references useraccount(useraccountid),
-       foreign key (promotionid) references promotion(promotionid)
 );
 
 -- name: drop-order!
@@ -108,8 +91,8 @@ values ('super smash bros melee', 5000,10),
 
 -- name: insert-orderitem!
 -- Adds an item to the given order.
-insert into orderitem (orderid, itemid, quantity, price)
-values (:orderid, :itemid, :quantity, :price);
+insert into orderitem (orderid, itemid, quantity)
+values (:orderid, :itemid, :quantity, (select promorate * price from item where itemid = :itemid));
 
 -- name: insert-order<!
 -- Inserts a new order into the ordertable for the given useraccountid.
@@ -155,12 +138,14 @@ select * from ordertable;
 
 -- name: select-order-with-status
 -- Get orders and their statuses
-select * from ordertable
-where orderstatus = :status
+select * from ordertable, orderitem, item
+where orderitem.orderid = ordertable.orderid
+and orderitem.itemid = item.itemid
+and orderstatus = :status
 
 -- name: select-customer-orders
 -- Get orders
-select ordertable.orderid, item.itemname, orderitem.price, ordertable.orderstatus
+select *
 from ordertable, orderitem, item
 where ordertable.useraccountid = :useraccountid
 and orderitem.orderid = ordertable.orderid

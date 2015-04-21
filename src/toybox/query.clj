@@ -27,8 +27,7 @@
 
 (defqueries "sql/query.sql")
 
-(def creates [create-promotion!
-              create-useraccount!
+(def creates [create-useraccount!
               create-item!
               create-order!
               create-orderitem!])
@@ -36,8 +35,7 @@
 (def drops [drop-orderitem!
             drop-order!
             drop-item!
-            drop-useraccount!
-            drop-promotion!])
+            drop-useraccount!])
 
 (defn create-tables! [s?]
   (doseq [create! creates]

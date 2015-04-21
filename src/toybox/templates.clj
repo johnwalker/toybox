@@ -250,7 +250,7 @@
    [:p {:name :id}       (str "Item ID: " (:itemid item))]
    [:p {:name :name}     (str "Item name: " (:itemname item))]
    [:p {:name :price}    (str "Price: " (:price item))]
-   [:p {:name :quantity}    (str "Quantity: " (:quantity item))]])
+   [:p {:name :quantity} (str "Quantity: " (:quantity item))]])
 
 (defn cart-div [items]
   [:div {:id "cart"}
@@ -290,7 +290,11 @@
 
 (defn order-item-div [order]
   [:div {:name :orderwrapper}
-   [:p {:name :orderid} (str "Order #"(:orderid (first order)))]
+   [:div {:name :details}
+    [:p {:name :orderid} (str "Order #"(:orderid (first order)))]
+    [:p {:name :useraccountid} (str "For customer #"(:useraccountid (first order)))]
+    [:p {:name :placementtime} (str "Placement time: "(:placementtime (first order)))]
+    [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]]
    (for [item order]
      [:div {:name :order}
       [:p {:name :id}       (str "Item ID: " (:itemid item))]
@@ -319,6 +323,9 @@
              :name "orderid"
              :value (:orderid (first order))}]
     [:p {:name :orderid} (str "Order #"(:orderid (first order)))]
+    [:p {:name :useraccountid} (str "For customer #"(:useraccountid (first order)))]
+    [:p {:name :placementtime} (str "Placement time: "(:placementtime (first order)))]
+    [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]
     (for [item order]
       [:div {:name :order}
        [:p {:name :id}       (str "Item ID: " (:itemid item))]
@@ -343,7 +350,7 @@
    [:body
     (nav-bar role)
     [:div {:id "pendingorders"}
-     (pr-str orders)]]))
+     (order-div orders)]]))
 
 (defn my-order-page [role orders]
   (html5

@@ -53,12 +53,10 @@
         (content-type "text/html"))))
 
 (defn pending-orders [r]
-  (let [pending-orders (q/select-order-with-status q/db-spec "pending")
-        role (get-in r [:db :userrole])
-        orderitems (doall (for [order pending-orders]
-                            (q/select-orderitem-order q/db-spec (:orderid order))))]
+  (let [pending-orders (partition-by :orderid (q/select-order-with-status q/db-spec "pending"))
+        role (get-in r [:db :userrole])]
     (if (#{"staff" "manager"} role)
-      (-> (response (t/pending-order-page role orderitems))
+      (-> (response (t/pending-order-page role pending-orders))
           (content-type "text/html"))
       (-> (response "unauthorized. you must first login.")
           (status 400)
