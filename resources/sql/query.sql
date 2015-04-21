@@ -31,11 +31,13 @@ drop table item;
 -- in an order.
 create table orderitem (
        orderitemid int auto_increment,
-       orderid int foreign key references ordertable(orderid),
-       itemid int foreign key references item(itemid),
-       quantity int foreign key check(quantity > 0),
+       orderid int,
+       itemid int,
+       quantity int check(quantity > 0),
        price int,
-       primary key(orderitemid)
+       primary key(orderitemid),
+       foreign key (orderitemid) references ordertable(orderid),
+       foreign key (itemid) references item(itemid)
 );
 
 -- name: create-promotion!
@@ -63,11 +65,13 @@ drop table orderitem;
 -- have been placed and their status.
 create table ordertable (
        orderid int auto_increment,
-       useraccountid int foreign key references useraccount(useraccountid),
-       promotionid int foreign key references promotion(promotionid),
+       useraccountid int,
+       promotionid int,
        orderstatus enum ('pending', 'shipped'),
        placementtime timestamp default current_timestamp,
-       primary key(orderid)
+       primary key(orderid),
+       foreign key (useraccountid) references useraccount(useraccountid),
+       foreign key (promotionid) references promotion(promotionid)
 );
 
 -- name: drop-order!
