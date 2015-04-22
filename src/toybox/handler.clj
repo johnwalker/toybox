@@ -6,8 +6,7 @@
             [toybox.middleware :as m]
             [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]])
-  (:gen-class))
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]))
 
 (defroutes app-routes
   (GET "/"          [] (-> g/home
@@ -26,7 +25,7 @@
                            m/authenticated?))
   (GET "/my-orders" [] (-> g/my-orders
                            m/authenticated?))
-  
+
   (GET "/staff/pending-orders"    [] (-> g/pending-orders
                                          m/authenticated?))
 
@@ -43,8 +42,8 @@
   (POST "/manager/update-promorate" [] (-> p/update-promorate
                                            m/authenticated?))
 
-  (GET "/manager/sales"    [] (-> g/sales
-                                  m/authenticated?))
+  (GET "/manager/statistics"    [] (-> g/statistics
+                                       m/authenticated?))
 
   (GET "/login"     [] g/login)
   (POST "/login"    [] p/login)
@@ -53,7 +52,7 @@
 
   (GET  "/register" []  g/register)
   (POST "/register" [] p/register)
-
+  (route/resources "/")
   (route/not-found "Not Found"))
 
 (def api (wrap-defaults app-routes api-defaults))

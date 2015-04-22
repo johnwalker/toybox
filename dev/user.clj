@@ -38,7 +38,7 @@
   []
   (stop)
   (q/reset-tables!)
-  (refresh-all :after 'user/go))
+  (start))
 
 (defn t []
   (test/run-tests 'toybox.handler-test))

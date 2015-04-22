@@ -10,11 +10,10 @@
   (let [p (:params r)
         s (first (q/find-user+pass @q/db (:username p) (:password p)))]
     (if s
-      (-> (redirect "/")
+      (-> (redirect "/inventory")
           (assoc :session (:session r))
           (assoc-in [:session] (select-keys s [:username :password :userrole]))
           (content-type "text/html"))
-
       (redirect "/login"))))
 
 (defn logout [r]

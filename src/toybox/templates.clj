@@ -1,6 +1,15 @@
 (ns toybox.templates
-  (:require [hiccup.page :refer [html5]]
+  (:require [hiccup.page :refer [html5 include-css]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
+
+
+(defn item-table [item itemid? name? price? quantity? promorate?]
+  [:table
+   (when itemid?    [:tr [:td "Item ID"]   [:td (:itemid item)]])
+   (when name?      [:tr [:td "Name"]      [:td (:itemname item)]])
+   (when price?     [:tr [:td "Price"]     [:td (:price item)]])
+   (when quantity?  [:tr [:td "Quantity"]  [:td (:quantity item)]])
+   (when promorate? [:tr [:td "Promorate"] [:td (if-let [p (:promorate item)] p "0.0")]])])
 
 (defn sign-out []
   [:form {:action "/logout"
@@ -78,11 +87,7 @@
     [:input {:type "hidden"
              :name "itemid"
              :value (:itemid item)}]
-    [:p {:name :id}       (str "Item ID: " (:itemid item))]
-    [:p {:name :name}     (str "Item name: " (:itemname item))]
-    [:p {:name :price}    (str "Price: " (:price item))]
-    [:p {:name :quantity} (str "Quantity: " (:quantity item))]
-    [:p {:name :promorate} (str "Promorate: " (:promorate item))]
+    (item-table item true true true true true)
     (case (first staff)
       :staff [:div {:name "staff-submit"}
               [:input {:type "text"
@@ -114,11 +119,14 @@
 (defn unsigned-login-page []
   (html5
    {:lang "en"}
-   [:head]
+   [:head
+    (include-css "/css/main.css")]
    [:body
+    (nav-bar nil)
+    [:h1 "Login"]
     (login-form)
-    [:p "think you're cool enough to own a login?"]
-    [:a {:href "/register"} "give us your credit card here."]]))
+    [:h1 "Want a username?"]
+    [:a {:href "/register"} "Register here."]]))
 
 (defn signed-login-page []
   (html5
@@ -128,19 +136,10 @@
     [:p "Currently signed in."]
     (sign-out)]))
 
-(defn unsigned-admin-page []
-  (html5
-   {:lang "en"}
-   [:head]
-   [:body
-    (admin-form)]))
-
-(def signed-admin-page signed-login-page)
-
 (defn user-elements [role]
   (when (#{"user" "staff" "manager"} role)
     [:div {:id "userelements"}
-     [:p [:a {:href "/my-orders"} "My orders"]]
+     [:p [:a {:href "/my-orders"} "My Orders"]]
      [:p [:a {:href "/cart"} "Cart"]]]))
 
 (defn logout-elements [role]
@@ -152,12 +151,12 @@
   (when (#{"staff" "manager"} role)
     [:div {:id "staffelements"}
      [:p [:a {:href "/staff/inventory"} "Staff inventory"]]
-     [:p [:a {:href "/manager/sales"} "All sales"]]
      [:p [:a {:href "/staff/pending-orders"} "Pending Orders"]]]))
 
 (defn manager-elements [role]
   (when (#{"manager"} role)
     [:div {:id "managerelements"}
+     [:p [:a {:href "/manager/statistics"} "Statistics"]]
      [:p [:a {:href "/manager/promorate"} "Promorates"]]]))
 
 (defn none-elements [role]
@@ -166,7 +165,6 @@
      [:div {:id "Register"}
       [:a {:href "/register"} "Register"]]
      [:div {:id "login"}
-      [:p "Login"]
       (login-form)]]))
 
 (defn nav-bar [role]
@@ -180,38 +178,27 @@
 (defn home-page [role]
   (html5
    {:lang "en"}
-   [:head [:title "Home"]]
+   [:head
+    [:title "Home"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/home.css")]
    [:body
-    (nav-bar role)
-    (when-not role
-      [:div {:id "unsigned"}
-       ;; [:div {:id "login"}
-       ;;  [:h1 "Login"]
-       ;;  (login-form)]
-       [:div {:id "register"}
-        [:h1 "Or register a new account"]
-        (registration-form)]])
-
-
-    ]))
-
+    (nav-bar role)]))
 
 
 (defn registration-page []
   (html5
    {:lang "en"}
-   [:head [:title "Register"]]
+   [:head
+    [:title "Register"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")]
    [:body
-    [:p "register here."]
-    (registration-form)]))
-
-
-(defn admin-page []
-  (html5
-   {:lang "en"}
-   [:head [:title "Register"]]
-   [:body
-    [:p "wowzor you are admin"]]))
+    (nav-bar nil)
+    [:div {:id :register}
+     [:h1 "Register a new account."]
+     (registration-form)]]))
 
 (defn add-item-form []
   [:form {:action "/admin/add-item"
@@ -235,17 +222,6 @@
    [:input {:type "submit"
             :value "Login"}]])
 
-(defn admin-inventory-page [items]
-  (html5
-   {:lang "en"}
-   [:head [:title "Register"]]
-   [:body
-    [:p "wowzor admin."]
-    [:p "want you add item?"]
-    (add-item-form)
-    (for [item items]
-      (item-div item :admin))]))
-
 (defn cart-item [item]
   [:div {:name :item}
    [:input {:type "hidden"
@@ -254,10 +230,7 @@
    [:input {:type "hidden"
             :name "price"
             :value (:price item)}]
-   [:p {:name :id}       (str "Item ID: " (:itemid item))]
-   [:p {:name :name}     (str "Item name: " (:itemname item))]
-   [:p {:name :price}    (str "Price: " (:price item))]
-   [:p {:name :quantity} (str "Quantity: " (:quantity item))]])
+   (item-table item true true true true false)])
 
 (defn cart-div [items]
   [:div {:id "cart"}
@@ -280,7 +253,11 @@
 (defn cart-page [role items]
   (html5
    {:lang "en"}
-   [:head [:title "Staff page"]]
+   [:head
+    [:title "My cart"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/cart.css")]
    [:body
     (nav-bar role)
     (cart-div items)]))
@@ -288,12 +265,17 @@
 (defn inventory-page [role cart items]
   (html5
    {:lang "en"}
-   [:head [:title "Register"]]
+   [:head
+    [:title "Inventory"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/inventory.css")]
    [:body
     (nav-bar role)
-    (cart-div cart)
-    [:div {:id "inventory"}
-     (map item-div items)]]))
+    [:div {:name :wrapper}
+     (cart-div cart)
+     [:div {:id "inventory"}
+      (map item-div items)]]]))
 
 (defn order-item-div [order]
   [:div {:name :orderwrapper}
@@ -304,10 +286,8 @@
     [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]]
    (for [item order]
      [:div {:name :order}
-      [:p {:name :id}       (str "Item ID: " (:itemid item))]
-      [:p {:name :name}     (str "Item name: " (:itemname item))]
-      [:p {:name :price}    (str "Price: " (:price item))]
-      [:p {:name :quantity} (str "Quantity: " (:quantity item))]])])
+      (item-table item true true true false)
+      ])])
 
 (defn order-div [order]
   (map order-item-div order))
@@ -315,7 +295,12 @@
 (defn staff-inventory-page [role items]
   (html5
    {:lang "en"}
-   [:head [:title "Register"]]
+   [:head
+    [:title "Staff Inventory"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/inventory.css")
+    (include-css "/css/staffinventory.css")]
    [:body
     (nav-bar role)
     [:div {:id "inventory"}
@@ -335,25 +320,32 @@
     [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]
     (for [item order]
       [:div {:name :order}
-       [:p {:name :id}       (str "Item ID: " (:itemid item))]
-       [:p {:name :name}     (str "Item name: " (:itemname item))]
-       [:p {:name :price}    (str "Price: " (:price item))]
-       [:p {:name :quantity} (str "Quantity: " (:quantity item))]])
+       (item-table item true true true false)])
     [:input {:type :submit :value "Ship it"}]]])
 
 (defn pending-order-page [role orders]
   (html5
    {:lang "en"}
-   [:head [:title "Pending Orders"]]
+   [:head
+    [:title "Pending Orders"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/pending.css")]
    [:body
     (nav-bar role)
     [:div {:id "pendingorders"}
-     (map pending-order orders)]]))
+     (if (seq orders)
+       (map pending-order orders)
+       [:p "No pending orders."])]]))
 
 (defn order-page [role orders]
   (html5
    {:lang "en"}
-   [:head [:title "Pending Orders"]]
+   [:head
+    [:title "Statistics"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/statistics.css")]
    [:body
     (nav-bar role)
     [:div {:id "pendingorders"}
@@ -362,15 +354,40 @@
 (defn my-order-page [role orders]
   (html5
    {:lang "en"}
-   [:head [:title "Pending Orders"]]
+   [:head
+    [:title "My Orders"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/order.css")]
    [:body
     (nav-bar role)
-    (order-div orders)]))
+    (if (seq orders)
+      (order-div orders)
+      [:p "You don't have any orders."])]))
 
 (defn manager-promorate-page [role items]
   (html5
    {:lang "en"}
-   [:head [:title "Pending Orders"]]
+   [:head
+    [:title "Pending Orders"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/manager.css")]
    [:body
     (nav-bar role)
     (map #(item-div % :manager) items)]))
+
+(defn manager-statistics-page [role]
+  (html5
+   {:lang "en"}
+   [:head
+    [:title "Statistics"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/manager.css")]
+   [:body
+    (nav-bar role)
+    [:div {:id :statistics}
+     [:p [:a {:href "/manager/statistics/week"} "Last week"]]
+     [:p [:a {:href "/manager/statistics/month"} "Last month"]]
+     [:p [:a {:href "/manager/statistics/year"} "Last year"]]]]))

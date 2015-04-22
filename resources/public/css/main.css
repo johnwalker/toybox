@@ -1,0 +1,17 @@
+a {
+    text-decoration: none;
+}
+
+nav {
+    border-bottom: 1px solid;
+    border-color: gray;
+}
+
+nav * {
+    display: inline-block;
+    margin-right: 1em;
+}
+
+nav div#login {
+    margin-left: 3em;
+} 

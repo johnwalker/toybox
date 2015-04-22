@@ -10,15 +10,6 @@
       (t/signed-login-page)
       (t/unsigned-login-page))))
 
-(defn admin [r]
-  (let [s (:session r)
-        u (:username s)
-        a (:admin u)]
-    ;; TODO make it so not everyone is admin
-    (if (and true u)
-      (t/signed-login-page)
-      (t/unsigned-admin-page))))
-
 (defn home [r]
   (t/home-page (get-in r [:db :userrole])))
 
@@ -28,16 +19,21 @@
     (-> (response (t/inventory-page (get-in r [:db :userrole]) cart items))
         (content-type "text/html"))))
 
-(defn admin-inventory [r]
-  (-> (response (t/admin-inventory-page []))))
-
-(defn sales [r]
+(defn sub-statistics [r]
   (let [role (get-in r [:db :userrole])]
     (if (#{"manager"} role)
       (let [orders (partition-by :orderid (q/select-all-customer-orders @q/db))]
         ;; close ...
         (-> (response (t/order-page role orders))
             (content-type "text/html"))))))
+
+(defn statistics [r]
+  (let [role (get-in r [:db :userrole])]
+    (if (#{"manager"} role)
+      (-> (response (t/manager-statistics-page role))
+          (content-type "text/html"))
+      (-> (response "Not authorized.")
+          (status 400)))))
 
 (defn my-orders [r]
   (let [orders (partition-by :orderid (q/select-customer-orders @q/db (get-in r [:db :useraccountid])))]

@@ -1,0 +1,9 @@
+div#cart {
+    float: right;
+    width: auto;
+}
+
+div#inventory{
+    float: left;
+    width: auto;
+}
