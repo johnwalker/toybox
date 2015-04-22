@@ -267,7 +267,7 @@
     [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]]
    (for [item order]
      [:div {:name :order}
-      (item-table item true true true false)
+      (item-table item true true true true false)
       ])])
 
 (defn order-div [order]
@@ -301,7 +301,7 @@
     [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]
     (for [item order]
       [:div {:name :order}
-       (item-table item true true true false)])
+       (item-table item true true true true false)])
     [:input {:type :submit :value "Ship it"}]]])
 
 (defn pending-order-page [role orders]
