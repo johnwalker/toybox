@@ -152,7 +152,7 @@
   (when (#{"staff" "manager"} role)
     [:div {:id "staffelements"}
      [:p [:a {:href "/staff/inventory"} "Staff inventory"]]
-     [:p [:a {:href "/orders"} "All orders"]]
+     [:p [:a {:href "/manager/sales"} "All sales"]]
      [:p [:a {:href "/staff/pending-orders"} "Pending Orders"]]]))
 
 (defn manager-elements [role]

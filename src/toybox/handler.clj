@@ -23,8 +23,7 @@
                            m/authenticated?))
   (GET "/my-orders" [] (-> g/my-orders
                            m/authenticated?))
-  (GET "/orders"    [] (-> g/orders
-                           m/authenticated?))
+  
   (GET "/staff/pending-orders"    [] (-> g/pending-orders
                                          m/authenticated?))
 
@@ -40,6 +39,9 @@
 
   (POST "/manager/update-promorate" [] (-> p/update-promorate
                                            m/authenticated?))
+
+  (GET "/manager/sales"    [] (-> g/sales
+                                  m/authenticated?))
 
   (GET "/login"     [] g/login)
   (POST "/login"    [] p/login)

@@ -91,7 +91,7 @@ values ('super smash bros melee', 5000,10),
 
 -- name: insert-orderitem!
 -- Adds an item to the given order.
-insert into orderitem (orderid, itemid, quantity)
+insert into orderitem (orderid, itemid, quantity, price)
 values (:orderid, :itemid, :quantity, (select price - coalesce(promorate, 0) * price from item where itemid = :itemid));
 
 -- name: insert-order<!
@@ -152,6 +152,14 @@ and orderitem.orderid = ordertable.orderid
 and orderitem.itemid = item.itemid
 order by ordertable.orderid desc;
 
+-- name: select-all-customer-orders
+-- Get orders
+select *
+from ordertable, orderitem, item
+where orderitem.orderid = ordertable.orderid
+and orderitem.itemid = item.itemid
+order by ordertable.orderid desc;
+
 -- name: select-orderitem
 select * from orderitem;
 
@@ -181,3 +189,12 @@ where item.itemid = :itemid
 select * from orderitem, item
 where orderitem.orderid = :orderid
 and   orderitem.itemid = item.itemid
+
+-- name: select-insufficient-orders
+-- Gets items that need a higher quantity for a particular order
+select * from item, ordertable, orderitem
+where item.quantity < orderitem.quantity
+and   ordertable.orderid = orderitem.orderid
+and   orderitem.itemid = item.itemid
+and   ordertable.orderid = :orderid
+  

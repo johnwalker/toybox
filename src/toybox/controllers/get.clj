@@ -31,11 +31,13 @@
 (defn admin-inventory [r]
   (-> (response (t/admin-inventory-page []))))
 
-(defn orders [r]
-  (let [cart-items (vals (get-in r [:session :cart]))
-        orders (partition-by :orderid (q/select-customer-orders q/db-spec (get-in r [:db :useraccountid])))]
-    (-> (response (t/order-page (get-in r [:db :userrole]) orders))
-        (content-type "text/html"))))
+(defn sales [r]
+  (let [role (get-in r [:db :userrole])]
+    (if (#{"manager"} role)
+      (let [orders (partition-by :orderid (q/select-all-customer-orders q/db-spec))]
+        ;; close ...
+        (-> (response (t/order-page role orders))
+            (content-type "text/html"))))))
 
 (defn my-orders [r]
   (let [orders (partition-by :orderid (q/select-customer-orders q/db-spec (get-in r [:db :useraccountid])))]

@@ -90,7 +90,7 @@
                                  (:itemid item)
                                  (:quantity item))))
         (-> (clear-cart r)
-            (assoc-in [:headers "Location"] "/orders")))
+            (assoc-in [:headers "Location"] "/my-orders")))
       (redirect "/login"))))
 
 
@@ -117,9 +117,9 @@
       (try
         (let [orderid (Integer/parseInt orderid)]
           (q/approve-order! q/db-spec orderid)
-          (redirect "/inventory"))
+          (redirect "/staff/pending-orders"))
         (catch Exception e
-          (-> (response (str "Insufficient quantity of item in inventory. Order not shipped."))
+          (-> (response (pr-str (q/select-insufficient-orders q/db-spec orderid)))
               (content-type "text/html"))))
       (-> (response "unauthorized")
           (status 400)))))
