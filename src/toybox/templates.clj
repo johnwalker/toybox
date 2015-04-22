@@ -2,6 +2,61 @@
   (:require [hiccup.page :refer [html5 include-css]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
+(defn login-form []
+  [:form {:action "/login"
+          :method :post}
+   (anti-forgery-field)
+   [:input {:type "text"
+            :name "username"
+            :inputmode "verbatim"
+            :placeholder "username"
+            :required true}]
+   [:input {:type "password"
+            :name "password"
+            :placeholder "password"
+            :inputmode "verbatim"
+            :required true}]
+   [:input {:type "submit"
+            :value "Login"}]])
+
+(defn user-elements [role]
+  (when (#{"user" "staff" "manager"} role)
+    [:div {:id "userelements"}
+     [:p [:a {:href "/my-orders"} "My Orders"]]
+     [:p [:a {:href "/cart"} "Cart"]]]))
+
+(defn logout-elements [role]
+  (when (#{"user" "staff" "manager"} role)
+    [:div {:id "logout-elements"}
+     [:p [:a {:href "/logout"} "Logout"]]]))
+
+(defn staff-elements [role]
+  (when (#{"staff" "manager"} role)
+    [:div {:id "staffelements"}
+     [:p [:a {:href "/staff/inventory"} "Staff inventory"]]
+     [:p [:a {:href "/staff/pending-orders"} "Pending Orders"]]]))
+
+(defn manager-elements [role]
+  (when (#{"manager"} role)
+    [:div {:id "managerelements"}
+     [:p [:a {:href "/manager/statistics"} "Statistics"]]
+     [:p [:a {:href "/manager/promorate"} "Promorates"]]]))
+
+(defn none-elements [role]
+  (when ((complement #{"user" "manager" "staff"}) role)
+    [:div {:id :none}
+     [:div {:id "Register"}
+      [:a {:href "/register"} "Register"]]
+     [:div {:id "login"}
+      (login-form)]]))
+
+(defn nav-bar [role]
+  [:nav [:p [:a {:href "/inventory"} "Inventory"]]
+   (user-elements role)
+   (staff-elements role)
+   (manager-elements role)
+   (none-elements role)
+   (logout-elements role)])
 
 (defn item-table [item itemid? name? price? quantity? promorate?]
   [:table
@@ -32,40 +87,6 @@
             :inputmode "verbatim"
             :required true}]
    [:input {:type :submit :value "Register"}]])
-
-(defn login-form []
-  [:form {:action "/login"
-          :method :post}
-   (anti-forgery-field)
-   [:input {:type "text"
-            :name "username"
-            :inputmode "verbatim"
-            :placeholder "username"
-            :required true}]
-   [:input {:type "password"
-            :name "password"
-            :placeholder "password"
-            :inputmode "verbatim"
-            :required true}]
-   [:input {:type "submit"
-            :value "Login"}]])
-
-(defn admin-form []
-  [:form {:action "/admin"
-          :method :post}
-   (anti-forgery-field)
-   [:input {:type "text"
-            :name "username"
-            :inputmode "verbatim"
-            :placeholder "username"
-            :required true}]
-   [:input {:type "password"
-            :name "password"
-            :placeholder "password"
-            :inputmode "verbatim"
-            :required true}]
-   [:input {:type "submit"
-            :value "Login"}]])
 
 (defn item-div [item & staff]
   [:div {:name :item}
@@ -136,45 +157,6 @@
     [:p "Currently signed in."]
     (sign-out)]))
 
-(defn user-elements [role]
-  (when (#{"user" "staff" "manager"} role)
-    [:div {:id "userelements"}
-     [:p [:a {:href "/my-orders"} "My Orders"]]
-     [:p [:a {:href "/cart"} "Cart"]]]))
-
-(defn logout-elements [role]
-  (when (#{"user" "staff" "manager"} role)
-    [:div {:id "logout-elements"}
-     [:p [:a {:href "/logout"} "Logout"]]]))
-
-(defn staff-elements [role]
-  (when (#{"staff" "manager"} role)
-    [:div {:id "staffelements"}
-     [:p [:a {:href "/staff/inventory"} "Staff inventory"]]
-     [:p [:a {:href "/staff/pending-orders"} "Pending Orders"]]]))
-
-(defn manager-elements [role]
-  (when (#{"manager"} role)
-    [:div {:id "managerelements"}
-     [:p [:a {:href "/manager/statistics"} "Statistics"]]
-     [:p [:a {:href "/manager/promorate"} "Promorates"]]]))
-
-(defn none-elements [role]
-  (when ((complement #{"user" "manager" "staff"}) role)
-    [:div {:id :none}
-     [:div {:id "Register"}
-      [:a {:href "/register"} "Register"]]
-     [:div {:id "login"}
-      (login-form)]]))
-
-(defn nav-bar [role]
-  [:nav [:p [:a {:href "/inventory"} "Inventory"]]
-   (user-elements role)
-   (staff-elements role)
-   (manager-elements role)
-   (none-elements role)
-   (logout-elements role)])
-
 (defn home-page [role]
   (html5
    {:lang "en"}
@@ -185,7 +167,6 @@
     (include-css "/css/home.css")]
    [:body
     (nav-bar role)]))
-
 
 (defn registration-page []
   (html5
