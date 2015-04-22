@@ -13,6 +13,8 @@
                  [ring/ring-defaults "0.1.4"]
                  [http-kit "2.1.19"]]
   :plugins [[lein-ring "0.9.3"]]
+  :main toybox.handler
+  :aot [toybox.handler]
   :ring {:handler toybox.handler/app}
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]

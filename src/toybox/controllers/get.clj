@@ -23,7 +23,7 @@
   (t/home-page (get-in r [:db :userrole])))
 
 (defn inventory [r]
-  (let [items (q/select-item q/db-spec)
+  (let [items (q/select-item @q/db)
         cart  (get-in r [:session :cart])]
     (-> (response (t/inventory-page (get-in r [:db :userrole]) cart items))
         (content-type "text/html"))))
@@ -34,13 +34,13 @@
 (defn sales [r]
   (let [role (get-in r [:db :userrole])]
     (if (#{"manager"} role)
-      (let [orders (partition-by :orderid (q/select-all-customer-orders q/db-spec))]
+      (let [orders (partition-by :orderid (q/select-all-customer-orders @q/db))]
         ;; close ...
         (-> (response (t/order-page role orders))
             (content-type "text/html"))))))
 
 (defn my-orders [r]
-  (let [orders (partition-by :orderid (q/select-customer-orders q/db-spec (get-in r [:db :useraccountid])))]
+  (let [orders (partition-by :orderid (q/select-customer-orders @q/db (get-in r [:db :useraccountid])))]
     (-> (response (t/my-order-page (get-in r [:db :userrole]) orders))
         (assoc :session (:session r))
         (content-type "text/html"))))
@@ -55,7 +55,7 @@
         (content-type "text/html"))))
 
 (defn pending-orders [r]
-  (let [pending-orders (partition-by :orderid (q/select-order-with-status q/db-spec "pending"))
+  (let [pending-orders (partition-by :orderid (q/select-order-with-status @q/db "pending"))
         role (get-in r [:db :userrole])]
     (if (#{"staff" "manager"} role)
       (-> (response (t/pending-order-page role pending-orders))
@@ -67,7 +67,7 @@
 (defn staff-inventory [r]
   (let [role (get-in r [:db :userrole])]
     (if (#{"staff" "manager"} role)
-      (let [items (q/select-item q/db-spec)]
+      (let [items (q/select-item @q/db)]
         (-> (response (t/staff-inventory-page role items))
             (content-type "text/html")))
       (-> (response "unauthorized")
@@ -76,7 +76,7 @@
 (defn manager-promorates [r]
   (let [role (get-in r [:db :userrole])]
     (if (#{"manager"} role)
-      (let [items (q/select-item q/db-spec)]
+      (let [items (q/select-item @q/db)]
         (-> (response (t/manager-promorate-page role items))
             (content-type "text/html")))
       (-> (response "unauthorized")

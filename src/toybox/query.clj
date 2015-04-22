@@ -7,23 +7,25 @@
 (defn make-pool
   [spec]
   (let [cpds (doto (ComboPooledDataSource.)
-               (.setDriverClass (:classname spec)) 
+               (.setDriverClass (:classname spec))
                (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
                (.setUser (:user spec))
                (.setPassword (:password spec))
                (.setMaxIdleTimeExcessConnections (* 30 30))
-               (.setMaxIdleTime (* 3 60 60)))] 
+               (.setMaxIdleTime (* 3 60 60)))]
     {:datasource cpds}))
 
 
 (let [db-host "localhost"
       db-port 3306
       db-name "toyboxtest"]
-  (defonce db-spec (make-pool {:classname "com.mysql.jdbc.Driver"
-                               :subprotocol "mysql"
-                               :subname (str "//" db-host ":" db-port "/" db-name)
-                               :user (:username config)
-                               :password (:password config)})))
+  (defonce db-spec {:classname "com.mysql.jdbc.Driver"
+                    :subprotocol "mysql"
+                    :subname (str "//" db-host ":" db-port "/" db-name)
+                    :user (:username config)
+                    :password (:password config)}))
+
+(def db (delay (make-pool db-spec)))
 
 (defqueries "sql/query.sql")
 
@@ -66,4 +68,3 @@
       (doto db-spec
         (init-useraccount!)
         (init-item!)))))
-

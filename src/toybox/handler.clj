@@ -1,10 +1,13 @@
 (ns toybox.handler
-  (:require [toybox.controllers.get :as g]
+  (:require [org.httpkit.server :refer [run-server]]
+            [toybox.controllers.get :as g]
             [toybox.controllers.post :as p]
+            [toybox.query :as q]
             [toybox.middleware :as m]
             [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]))
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]])
+  (:gen-class))
 
 (defroutes app-routes
   (GET "/"          [] (-> g/home
@@ -56,3 +59,8 @@
 (def api (wrap-defaults app-routes api-defaults))
 
 (def app (wrap-defaults app-routes site-defaults))
+
+
+(defn -main []
+  (q/reset-tables!)
+  (run-server app {:port 8000}))

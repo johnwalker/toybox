@@ -8,7 +8,7 @@
 
 (defn login [r]
   (let [p (:params r)
-        s (first (q/find-user+pass q/db-spec (:username p) (:password p)))]
+        s (first (q/find-user+pass @q/db (:username p) (:password p)))]
     (if s
       (-> (redirect "/")
           (assoc :session (:session r))
@@ -25,7 +25,7 @@
 (defn register [r]
   (let [p (:params r)]
     (try
-      (q/insert-user! q/db-spec
+      (q/insert-user! @q/db
                       (:username p)
                       (:password p))
       ;; TODO: redirect to acc
@@ -39,7 +39,7 @@
 (defn add-item [r]
   (let [{:keys [name price quantity]} (:params r)]
     (try
-      (q/insert-item! q/db-spec
+      (q/insert-item! @q/db
                       name
                       price
                       quantity)
@@ -80,12 +80,12 @@
 (defn submit-cart [r]
   (let [cart (vals (get-in r [:session :cart]))
         p    (:session r)
-        s    (q/find-user+pass q/db-spec (:username p) (:password p))]
+        s    (q/find-user+pass @q/db (:username p) (:password p))]
     (if (seq s)
       (try
-        (let [qr (q/insert-order<! q/db-spec (:useraccountid (first s)))]
+        (let [qr (q/insert-order<! @q/db (:useraccountid (first s)))]
           (doseq [item cart]
-            (q/insert-orderitem! q/db-spec
+            (q/insert-orderitem! @q/db
                                  (:generated_key qr)
                                  (:itemid item)
                                  (:quantity item))))
@@ -101,7 +101,7 @@
       (try
         (let [new-quantity (Integer/parseInt new-quantity)
               itemid (Integer/parseInt itemid)]
-          (q/update-item-quantity! q/db-spec new-quantity itemid)
+          (q/update-item-quantity! @q/db new-quantity itemid)
           (redirect "/staff/inventory"))
         (catch Exception e
           (-> (response (str "Failed to update quantity for itemid " itemid))
@@ -116,10 +116,10 @@
     (if (#{"staff" "manager"} role)
       (try
         (let [orderid (Integer/parseInt orderid)]
-          (q/approve-order! q/db-spec orderid)
+          (q/approve-order! @q/db orderid)
           (redirect "/staff/pending-orders"))
         (catch Exception e
-          (-> (response (pr-str (q/select-insufficient-orders q/db-spec orderid)))
+          (-> (response (pr-str (q/select-insufficient-orders @q/db orderid)))
               (content-type "text/html"))))
       (-> (response "unauthorized")
           (status 400)))))
@@ -132,7 +132,7 @@
         (println new-promorate)
         (let [itemid (Integer/parseInt itemid)
               new-promorate (Float/parseFloat new-promorate)]
-          (q/update-item-promorate! q/db-spec new-promorate itemid)
+          (q/update-item-promorate! @q/db new-promorate itemid)
           (redirect "/manager/promorate"))
         (catch Exception e
           (-> (response (str "Invalid promorate. Must be between 1 and 0"))

@@ -5,7 +5,7 @@
 (defn require-authenticated [app]
   (fn [r]
     (let [ps (:session r)
-          s  (q/find-user+pass q/db-spec
+          s  (q/find-user+pass @q/db
                                (:username ps)
                                (:password ps))]
       (if (seq s)
@@ -17,7 +17,7 @@
 (defn authenticated? [app]
   (fn [r]
     (let [ps (:session r)
-          s  (when ps (q/find-user+pass q/db-spec
+          s  (when ps (q/find-user+pass @q/db
                                         (:username ps)
                                         (:password ps)))]
       (if (seq s)
