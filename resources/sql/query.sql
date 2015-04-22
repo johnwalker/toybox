@@ -92,7 +92,7 @@ values ('super smash bros melee', 5000,10),
 -- name: insert-orderitem!
 -- Adds an item to the given order.
 insert into orderitem (orderid, itemid, quantity)
-values (:orderid, :itemid, :quantity, (select promorate * price from item where itemid = :itemid));
+values (:orderid, :itemid, :quantity, (select price - coalesce(promorate, 0) * price from item where itemid = :itemid));
 
 -- name: insert-order<!
 -- Inserts a new order into the ordertable for the given useraccountid.
