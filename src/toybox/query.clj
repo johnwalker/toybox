@@ -1,8 +1,7 @@
 (ns toybox.query
-  (:require [yesql.core :refer [defqueries]])
+  (:require [yesql.core :refer [defqueries]]
+            [toybox.constant :refer [config]])
   (:import com.mchange.v2.c3p0.ComboPooledDataSource))
-
-(defonce config (read-string (slurp "config.edn")))
 
 (defn make-pool
   [spec]
@@ -14,7 +13,6 @@
                (.setMaxIdleTimeExcessConnections (* 30 30))
                (.setMaxIdleTime (* 3 60 60)))]
     {:datasource cpds}))
-
 
 (let [db-host "localhost"
       db-port 3306
