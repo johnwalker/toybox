@@ -262,7 +262,7 @@
   [:div {:name :orderwrapper}
    [:div {:name :details}
     [:p {:name :orderid} (str "Order #"(:orderid (first order)))]
-    [:p {:name :useraccountid} (str "For customer #"(:useraccountid (first order)))]
+    [:p {:name :useraccountid} (str "For customer #" (:useraccountid (first order)) " "(:username (first order)))]
     [:p {:name :placementtime} (str "Placement time: "(:placementtime (first order)))]
     [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]]
    (for [item order]
@@ -296,7 +296,7 @@
              :name "orderid"
              :value (:orderid (first order))}]
     [:p {:name :orderid} (str "Order #"(:orderid (first order)))]
-    [:p {:name :useraccountid} (str "For customer #"(:useraccountid (first order)))]
+    [:p {:name :useraccountid} (str "For customer #" (:useraccountid (first order)) " "(:username (first order)))]
     [:p {:name :placementtime} (str "Placement time: "(:placementtime (first order)))]
     [:p {:name :orderstatus} (str "Order status: "(:orderstatus (first order)))]
     (for [item order]
@@ -372,3 +372,38 @@
      [:p [:a {:href "/manager/statistics/week"} "Last week"]]
      [:p [:a {:href "/manager/statistics/month"} "Last month"]]
      [:p [:a {:href "/manager/statistics/year"} "Last year"]]]]))
+
+(defn manager-generic-statistics-page [role items]
+  (html5
+   {:lang "en"}
+   [:head
+    [:title "Statistics"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")
+    (include-css "/css/manager.css")]
+   [:body
+    (nav-bar role)
+    [:div {:id :statistics}
+     (order-div items)]]))
+
+
+(defn insufficient-item-page [role items]
+  (html5
+   {:lang "en"}
+   [:head
+    [:title "Insufficient items"]
+    [:meta {:charset "UTF-8"}]
+    (include-css "/css/main.css")]
+   [:body
+    (nav-bar role)
+    [:h1 "Error"]
+    [:p "There were some items that you tried to ship that didn't have
+    enough in stock. You need at least this many of these items to
+    ship this order."]
+    [:div {:id :insufficient}
+     (map (fn [item]
+            [:table
+             [:tr [:td "Item ID"]   [:td (:itemid item)]]
+             [:tr [:td "Name"]      [:td (:itemname item)]]
+             [:tr [:td "Quantity"]  [:td (:orderitemquantity item)]]]) items)]]))
+

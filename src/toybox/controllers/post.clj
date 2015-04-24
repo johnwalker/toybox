@@ -1,6 +1,6 @@
 (ns toybox.controllers.post
   (:require [ring.util.response :refer [redirect response content-type status]]
-            [toybox.templates :as v]
+            [toybox.templates :as t]
             [toybox.query :as q]))
 
 (defn admin [r]
@@ -118,7 +118,7 @@
           (q/approve-order! @q/db orderid)
           (redirect "/staff/pending-orders"))
         (catch Exception e
-          (-> (response (pr-str (q/select-insufficient-orders @q/db orderid)))
+          (-> (response (t/insufficient-item-page role (q/select-insufficient-items @q/db orderid)))
               (content-type "text/html"))))
       (-> (response "unauthorized")
           (status 400)))))

@@ -19,7 +19,7 @@
                               m/authenticated?))
 
   (POST "/clear-cart"  [] p/clear-cart)
-  
+
   (POST "/submit-cart" [] (-> p/submit-cart
                               m/authenticated?))
 
@@ -46,6 +46,17 @@
 
   (GET "/manager/statistics"    [] (-> g/statistics
                                        m/authenticated?))
+
+  (GET "/manager/statistics/week"    [] (-> g/manager-statistics-week
+                                            m/authenticated?))
+
+  (GET "/manager/statistics/month"    [] (-> g/manager-statistics-month
+                                             m/authenticated?))
+
+  (GET "/manager/statistics/year"    [] (-> g/manager-statistics-year
+                                            m/authenticated?))
+
+
 
   (GET "/login"     [] g/login)
   (POST "/login"    [] p/login)

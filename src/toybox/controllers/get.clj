@@ -77,3 +77,21 @@
             (content-type "text/html")))
       (-> (response "unauthorized")
           (status 400)))))
+
+(defn manager-statistics [r f]
+  (let [role (get-in r [:db :userrole])]
+    (if (#{"manager"} role)
+      (let [items (f @q/db)]
+        (-> (response (t/manager-generic-statistics-page role (partition-by :orderid items)))
+            (content-type "text/html")))
+      (-> (response "unauthorized")
+          (status 400)))))
+
+(defn manager-statistics-week [r]
+  (manager-statistics r q/select-orders-last-week))
+
+(defn manager-statistics-month [r]
+  (manager-statistics r q/select-orders-last-month))
+
+(defn manager-statistics-year [r]
+  (manager-statistics r q/select-orders-last-year))

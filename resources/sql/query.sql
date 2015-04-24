@@ -151,9 +151,10 @@ select * from ordertable;
 
 -- name: select-order-with-status
 -- Get orders and their statuses
-select * from ordertable, orderitem, item
+select * from ordertable, orderitem, item, useraccount
 where orderitem.orderid = ordertable.orderid
 and orderitem.itemid = item.itemid
+and ordertable.useraccountid = useraccount.useraccountid
 and orderstatus = :status
 
 -- name: select-customer-orders
@@ -204,18 +205,19 @@ select * from orderitem, item
 where orderitem.orderid = :orderid
 and   orderitem.itemid = item.itemid
 
--- name: select-insufficient-orders
+-- name: select-insufficient-items
 -- Gets items that need a higher quantity for a particular order
-select * from item, ordertable, orderitem
+select item.itemid, orderitem.orderid, item.itemname,
+item.quantity as itemquantity, orderitem.quantity as orderitemquantity
+from item, orderitem
 where item.quantity < orderitem.quantity
-and   ordertable.orderid = orderitem.orderid
+and   orderitem.orderid = :orderid
 and   orderitem.itemid = item.itemid
-and   ordertable.orderid = :orderid
   
 -- name: select-orders-last-week
 -- Selects orders and customer information from the last week
-select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname,
-       orderitem.price, orderitem.quantity, useraccount.username
+select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname, ordertable.orderstatus,
+       orderitem.price, orderitem.quantity, useraccount.username, ordertable.orderid
 from ordertable, orderitem, item, useraccount
 where ordertable.useraccountid = useraccount.useraccountid
 and orderitem.orderid = ordertable.orderid
@@ -225,8 +227,8 @@ order by ordertable.orderid desc;
 
 -- name: select-orders-last-month
 -- Selects orders and customer information from the last month
-select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname,
-       orderitem.price, orderitem.quantity, useraccount.username
+select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname, ordertable.orderstatus,
+       ordertable.orderid, orderitem.price, orderitem.quantity, useraccount.username
 from ordertable, orderitem, item, useraccount
 where ordertable.useraccountid = useraccount.useraccountid
 and orderitem.orderid = ordertable.orderid
@@ -236,8 +238,8 @@ order by ordertable.orderid desc;
 
 -- name: select-orders-last-year
 -- Selects orders and customer information from the last year
-select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname,
-       orderitem.price, orderitem.quantity, useraccount.username
+select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname, ordertable.orderstatus,
+       ordertable.orderid, orderitem.price, orderitem.quantity, useraccount.username
 from ordertable, orderitem, item, useraccount
 where ordertable.useraccountid = useraccount.useraccountid
 and orderitem.orderid = ordertable.orderid
