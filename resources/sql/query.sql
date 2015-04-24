@@ -35,6 +35,11 @@ create trigger nonnegative_quantity before update on `item`
      then 
         set msg = concat('violated nonnegative_quantity:', cast(new.quantity as char));
         signal sqlstate '45000' set message_text = msg;
+     end if;
+     if (new.promorate < 0 or new.promorate > 1)
+     then 
+        set msg = concat('violated stochastic_promorate:', cast(new.promorate as char));
+        signal sqlstate '45000' set message_text = msg;
      end if; 
      end
 

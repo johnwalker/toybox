@@ -53,3 +53,7 @@
 (defn view3 []
   (q/select-orderitem q/db-spec))
 
+(defn launch []
+  (q/reset-tables!)
+  (q/nonnegative-quantity! @q/db))
+
