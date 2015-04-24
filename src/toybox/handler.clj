@@ -17,7 +17,9 @@
   ;; check authorized
   (POST "/add-to-cart" [] (-> p/add-to-cart
                               m/authenticated?))
+
   (POST "/clear-cart"  [] p/clear-cart)
+  
   (POST "/submit-cart" [] (-> p/submit-cart
                               m/authenticated?))
 

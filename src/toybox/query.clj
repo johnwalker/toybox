@@ -40,7 +40,7 @@
 (defn create-tables! [s?]
   (doseq [create! creates]
     (try
-      (create! db-spec)
+      (create! @db)
       (catch Exception e
         (when s?
           (println (str "Failed to create table in " create!))
@@ -49,7 +49,7 @@
 (defn drop-tables! [s?]
   (doseq [drop! drops]
     (try
-      (drop! db-spec)
+      (drop! @db)
       (catch Exception e
         (when s?
           (println (str "Failed to drop table in " drop!))
@@ -63,6 +63,8 @@
                     (let [s (with-out-str (create-tables! false))]
                       (when (seq s) s))))]
     (when-not message
-      (doto db-spec
+      (doto @db
         (init-useraccount!)
-        (init-item!)))))
+        (init-item!)
+        (init-order!)
+        (init-orderitem!)))))

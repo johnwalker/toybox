@@ -33,7 +33,7 @@ create trigger nonnegative_quantity before update on `item`
      declare msg varchar(255);
      if (new.quantity < 0)
      then 
-        set msg = concat('violated positive_quantity:', cast(new.quantity as char));
+        set msg = concat('violated nonnegative_quantity:', cast(new.quantity as char));
         signal sqlstate '45000' set message_text = msg;
      end if; 
      end
@@ -55,6 +55,13 @@ create table orderitem (
        foreign key (orderid) references ordertable(orderid),
        foreign key (itemid) references item(itemid)
 );
+-- name: init-orderitem!
+
+insert into orderitem (orderid, itemid, quantity, price)
+values (1, 1, 2, 500),
+       (1, 3, 2, 500),
+       (2, 2, 1, 700),
+       (3, 1, 1, 900)
 
 -- name: drop-orderitem!
 -- Deletes the orderitem table.
@@ -72,6 +79,12 @@ create table ordertable (
        foreign key (useraccountid) references useraccount(useraccountid)
 );
 
+-- name: init-order!
+insert into ordertable (useraccountid, orderstatus, placementtime)
+values (1, 'pending',  DATE_SUB(CURDATE(), INTERVAL 2 YEAR)),
+       (2, 'pending',  DATE_SUB(CURDATE(), INTERVAL 6 MONTH)),
+       (3, 'pending',  DATE_SUB(CURDATE(), INTERVAL 6 DAY))
+
 -- name: drop-order!
 -- Deletes the order table.
 drop table ordertable;
@@ -84,10 +97,10 @@ values ('manager', 'manager', 'manager'),
 
 -- name: init-item!
 insert into item (itemname, price, quantity)
-values ('super smash bros melee', 5000,10),
-       ('captain falcon action figure', 6000,1),
-       ('blue falcon model', 10000, 1),
-       ('rainbow phoenix action figure', 9000,1);
+values ('Super Smash Bros Melee', 5000,10),
+       ('Captain Falcon Action Figure', 6000,1),
+       ('Blue Falcon Model', 10000, 1),
+       ('Rainbow Phoenix Action Figure', 9000,1);
 
 -- name: insert-orderitem!
 -- Adds an item to the given order.
@@ -146,8 +159,9 @@ and orderstatus = :status
 -- name: select-customer-orders
 -- Get orders
 select *
-from ordertable, orderitem, item
+from ordertable, orderitem, item, useraccount
 where ordertable.useraccountid = :useraccountid
+and   useraccount.useraccountid = :useraccountid
 and orderitem.orderid = ordertable.orderid
 and orderitem.itemid = item.itemid
 order by ordertable.orderid desc;
@@ -198,3 +212,35 @@ and   ordertable.orderid = orderitem.orderid
 and   orderitem.itemid = item.itemid
 and   ordertable.orderid = :orderid
   
+-- name: select-orders-last-week
+-- Selects orders and customer information from the last week
+select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname,
+       orderitem.price, orderitem.quantity, useraccount.username
+from ordertable, orderitem, item, useraccount
+where ordertable.useraccountid = useraccount.useraccountid
+and orderitem.orderid = ordertable.orderid
+and orderitem.itemid = item.itemid
+and ordertable.placementtime >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+order by ordertable.orderid desc;
+
+-- name: select-orders-last-month
+-- Selects orders and customer information from the last month
+select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname,
+       orderitem.price, orderitem.quantity, useraccount.username
+from ordertable, orderitem, item, useraccount
+where ordertable.useraccountid = useraccount.useraccountid
+and orderitem.orderid = ordertable.orderid
+and orderitem.itemid = item.itemid
+and ordertable.placementtime >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+order by ordertable.orderid desc;
+
+-- name: select-orders-last-year
+-- Selects orders and customer information from the last year
+select ordertable.useraccountid, ordertable.placementtime, item.itemid, item.itemname,
+       orderitem.price, orderitem.quantity, useraccount.username
+from ordertable, orderitem, item, useraccount
+where ordertable.useraccountid = useraccount.useraccountid
+and orderitem.orderid = ordertable.orderid
+and orderitem.itemid = item.itemid
+and ordertable.placementtime >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+order by ordertable.orderid desc;
