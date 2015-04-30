@@ -384,6 +384,9 @@
    [:body
     (nav-bar role)
     [:div {:id :statistics}
+     [:p (str (count items) " orders placed.")]
+     [:p (str "Total of " (reduce + (map count items))  " items in orders either shipped or pending.")]
+     [:p (str "Total potential value of " (reduce + (map #(apply + %) (map #(map :price %) items))))]
      (order-div items)]]))
 
 
